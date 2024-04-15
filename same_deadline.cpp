@@ -5,7 +5,7 @@ using namespace std;
 #define pb push_back
 #define pi pair<int, int>
 
-int N, B, S, no_of_jobs, nodes = 0;
+int N, B, S, no_of_jobs, nodes = 0, y = 0;
 
 struct job
 {
@@ -14,9 +14,9 @@ struct job
     vector<int> chunks;
 };
 
-pi hb(vector<pair<int, int>> R, int B, int limit)
+pi hb(vector<pair<int, int>> R, int B, int S, int d)
 {
-    int n = R.size(), cnt = 0;
+    int n = R.size(), cnt = 0, limit = S * d;
     // check working
     fori(i, n) if (R[i].first > 0) cnt++;
     if (cnt < B)
@@ -41,23 +41,62 @@ int cred_m()
     return 0;
 }
 
-void schedule(vector<pair<int, int>> &R, int NTS, int l, int r)
+vector<pi> schedule(vector<pair<int, int>> &R, int no_of_slots, int l, int r, int d)
 {
-    
+    int NTS = no_of_slots;
+    for (int i = l; i <= r; i++)
+    {
+        int k = min(R[i].first, d);
+        if (k > NTS)
+        {
+            R[i].first -= NTS;
+            NTS = 0;
+            break;
+        }
+        else
+        {
+            NTS -= min(R[i].first, d);
+            R[i].first = R[i].first - min(R[i].first, d);
+        }
+    }
+    sort(R.begin(), R.end());
+    reverse(R.begin(), R.end());
+    cout << y << endl;
+    for (auto x : R)
+    {
+        cout << x.first << " ";
+        y++;
+    }
+    cout << endl;
+    while (R[R.size() - 1].first == 0)
+        R.pop_back();
+
+    return R;
 }
 
 int cred_s(vector<pair<int, int>> R, int d, int B, int S)
 {
     int ans = 0;
-    pi p = hb(R, B, S * d);
-    while (p != {-1, -1})
+    pi p = hb(R, B, S, d);
+    while (R.size() > 0 && p.first != -1 && p.second != -1)
     {
-        cout << p.first << " " << p.second;
-        R = schedule(R, S * d, p.first, p.second);
+        cout << p.first << " " << p.second << endl;
+        R = schedule(R, S * d, p.first, p.second, d);
         ans += 1;
-        pi p = hb(R, B, S * d);
+        p = hb(R, B, S, d);
     }
-    return 0;
+    // cout << "-";
+    // for (auto x : R)
+    //     cout << x.first << " ";
+    // cout << "-";
+    while (R.size() > 0)
+    {
+
+        R = schedule(R, S * d, 0, min(int(R.size() - 1), B), d);
+        ans = ans + 1;
+    }
+
+    return ans;
 }
 
 int main()
