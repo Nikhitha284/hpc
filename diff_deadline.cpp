@@ -5,7 +5,7 @@ using namespace std;
 #define pb push_back
 #define pi pair<int, int>
 
-map<int, vector<pi>> active_nodes;
+vector<pair<int, vector<pi>> >active_nodes;
 int N, B, S, no_of_jobs, nodes = 0, y = 0;
 struct job
 {
@@ -56,6 +56,7 @@ vector<pair<int, int>> calculate_R(vector<int> chunk_hist)
     {
         R.pb({y.second, y.first});
     }
+    
     return R;
 }
 int findchunk(int chunk, vector<pi> temp)
@@ -70,7 +71,76 @@ int findchunk(int chunk, vector<pi> temp)
     }
     return -1;
 }
+int sum(vector<pi> temp){
+    int sum=0;
+    fori(i,temp.size())sum=sum+temp[i].first;
+    return sum;
+}
 
+
+
+vector<pi> schedule(vector<pair<int, int>> &R, int no_of_slots, int l, int r, int d)
+{
+    int NTS = no_of_slots;
+    vector<pi> temp;
+    int initial_size = active_nodes.size();
+    for (int i = l; i <= r; i++)
+    {
+        int k = min(R[i].first, d);
+        
+        if (k > NTS)
+        {
+            R[i].first -= NTS;
+            NTS = 0;
+            break;
+        }
+        else
+        {
+            NTS -= min(R[i].first, d);
+            R[i].first = R[i].first - min(R[i].first, d);
+        }
+        temp.push_back({k, R[i].second});
+    }
+    sort(R.begin(), R.end());
+    reverse(R.begin(), R.end());
+    // cout << y << endl;
+    // for (auto x : R)
+    // {
+    //     cout << x.first << " ";
+    //     y++;
+    // }
+    // cout << endl;
+    while (R[R.size() - 1].first == 0)
+        R.pop_back();
+
+    active_nodes.pb({initial_size,temp}) ;
+    return R;
+}
+
+int cred_s(vector<pair<int, int>> R, int d, int B, int S)
+{
+    int ans = 0;
+    pi p = hb(R, B, S, d);
+    while (R.size() > 0 && p.first != -1 && p.second != -1)
+    {
+        // cout << p.first << "***" << p.second << endl;
+        R = schedule(R, S * d, p.first, p.second, d);
+        ans += 1;
+        p = hb(R, B, S, d);
+    }
+    // cout << "-";
+    // for (auto x : R)
+    //     cout << x.first << " ";
+    // cout << "-";
+    while (R.size() > 0)
+    {
+
+        R = schedule(R, S * d, 0, min(int(R.size() - 1), B - 1), d);
+        ans = ans + 1;
+    }
+
+    return ans;
+}
 int cred_m()
 {
     std::sort(jobs.begin(), jobs.end(), compareByDeadline);
@@ -89,89 +159,70 @@ int cred_m()
             ans = ans + cred_s(R, f.first, B, S);
         }
         else
-        {
-            for (auto y : R)
+        {    
+            fori (i,R.size())
             {
+                //y
 
-                for (auto g : active_nodes)
+                fori(j , active_nodes.size())
                 {
-                    if (findchunk(y.second, g.second) != -1)
+                    //g
+                    if(R[i].first==0){
+                         break;
+                    cout<<"efwef"<<R[i].first<<endl;
+                   
+                    }
+                    if (findchunk(R[i].second, active_nodes[j].second) != -1)
                     {
-                        int t_slots = f.first - g[findchunk(y.second, g.second)].first;
+                         if(sum(active_nodes[j].second)<S*f.first){
+                        int t_slots = f.first - active_nodes[j].second[findchunk(R[i].second, active_nodes[j].second)].first;
                         if (t_slots > 0)
                         {
-                            y.first -= min(t_slots, y.first);
-                            g[findchunk(y.second, g.second)].first += min(t_slots, y.first);
+                            cout<<"C"<<R[i].second<<"---"<<active_nodes[j].first<<"dwdd"<<t_slots<<endl;
+                            int a =min(t_slots, R[i].first);
+                            R[i].first -= min(t_slots, R[i].first);
+                            
+                            cout<<R[i].first<<endl;
+                            active_nodes[j].second[findchunk(R[i].second, active_nodes[j].second)].first += a;
                         }
                     }
                 }
+                }
+                if(R[i].first!=0){
+                fori(j , active_nodes.size())
+                {
+                    if (findchunk(R[i].second, active_nodes[j].second) == -1){
+                        if(active_nodes[j].second.size()<B){
+                            if(sum(active_nodes[j].second)<S*f.first){
+                                int a= min(min(R[i].first,f.first),S*f.first-sum(active_nodes[j].second));
+                                 active_nodes[j].second.pb({a,R[i].second});
+                                 R[i].first-=a;
+                            }
+                           
+                        }
+                    }
+                }
+                }
             }
-        }
-    }
-}
-
-vector<pi> schedule(vector<pair<int, int>> &R, int no_of_slots, int l, int r, int d)
-{
-    int NTS = no_of_slots;
-    vector<pi> temp;
-    int initial_size = active_nodes.size();
-    for (int i = l; i <= r; i++)
-    {
-        int k = min(R[i].first, d);
-        temp.push_back({k, R[i].second});
-        if (k > NTS)
-        {
-            R[i].first -= NTS;
-            NTS = 0;
-            break;
-        }
-        else
-        {
-            NTS -= min(R[i].first, d);
-            R[i].first = R[i].first - min(R[i].first, d);
-        }
-    }
-    sort(R.begin(), R.end());
+            sort(R.begin(), R.end());
     reverse(R.begin(), R.end());
-    cout << y << endl;
-    for (auto x : R)
-    {
-        cout << x.first << " ";
-        y++;
-    }
-    cout << endl;
     while (R[R.size() - 1].first == 0)
         R.pop_back();
+     ans = ans + cred_s(R, f.first, B, S);
 
-    active_nodes[initial_size + 1] = temp;
-    return R;
-}
 
-int cred_s(vector<pair<int, int>> R, int d, int B, int S)
-{
-    int ans = 0;
-    pi p = hb(R, B, S, d);
-    while (R.size() > 0 && p.first != -1 && p.second != -1)
-    {
-        cout << p.first << "***" << p.second << endl;
-        R = schedule(R, S * d, p.first, p.second, d);
-        ans += 1;
-        p = hb(R, B, S, d);
+        }
+         for(auto f:active_nodes){
+        cout<<f.first<<endl;
+        for(auto g:f.second){
+            cout<<g.second<<" "<<g.first<<" "<<endl;
+        }
+        
     }
-    // cout << "-";
-    // for (auto x : R)
-    //     cout << x.first << " ";
-    // cout << "-";
-    while (R.size() > 0)
-    {
-
-        R = schedule(R, S * d, 0, min(int(R.size() - 1), B - 1), d);
-        ans = ans + 1;
+    cout<<"after iteration"<<f.first<<endl;
     }
-
     return ans;
 }
-
 int main()
 {
     cin >> N >> B >> S;
@@ -203,12 +254,13 @@ int main()
     // nodes = cred_s(R, 3, B, S);
     // cout << nodes<<endl;
     // cout<<"?????????"<<endl;
-    // for(auto f:active_nodes){
+  
+    cout<<cred_m();
+    //   for(auto f:active_nodes){
     //     cout<<f.first<<endl;
     //     for(auto g:f.second){
     //         cout<<g.second<<" "<<g.first<<" "<<endl;
     //     }
     //     cout<<endl;
     // }
-    cred_m();
 }
