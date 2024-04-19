@@ -262,19 +262,19 @@ int cred_m()
 int main()
 {
     // Input system parameters and job information
-    cout << "Enter the number of physical machines " << endl;
+    
     cin >> N;
-    cout << "Enter the value of B" << endl;
+    
     cin >> B;
-    cout << "Enter the maximum number of virtual machines that can be run on a single physical machine" << endl;
+    
     cin >> S;
 
     map<int, int> mp;
     job job1;
-    cout << "Enter the number of jobs" << endl;
+   
     cin >> no_of_jobs;
     // for every job take input from user
-    cout << "for each job enter the deadline and chunk set size and chunk ids of all chunks needed for the job" << endl;
+    
     while (no_of_jobs--)
     {
         int deadline, no_of_chunks;
@@ -294,13 +294,17 @@ int main()
     }
 
     // output the number of active nodes needed
-    cout << cred_m() << endl;
+    int o=cred_m();
+    if(o>N){
+        cout<<"cannot schedule with given resources"<<endl;
+    }
+    cout <<"number of active nodes required :" <<o << endl;
     for (auto f : active_nodes)
     {
         cout << "node: " << f.first << endl;
         for (auto g : f.second)
         {
-            cout << "chunk :" << g.second << " " << g.first << " " << endl;
+            cout << "chunk " << g.second << " " << "time slots :"<<g.first << " " << endl;
         }
         cout << endl;
     }
