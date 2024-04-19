@@ -5,7 +5,7 @@ using namespace std;
 #define pb push_back
 #define pi pair<int, int>
 
-vector<pair<int, vector<pi>> >active_nodes;
+vector<pair<int, vector<pi>>> active_nodes;
 int N, B, S, no_of_jobs, nodes = 0, y = 0;
 struct job
 {
@@ -56,7 +56,7 @@ vector<pair<int, int>> calculate_R(vector<int> chunk_hist)
     {
         R.pb({y.second, y.first});
     }
-    
+
     return R;
 }
 int findchunk(int chunk, vector<pi> temp)
@@ -71,13 +71,12 @@ int findchunk(int chunk, vector<pi> temp)
     }
     return -1;
 }
-int sum(vector<pi> temp){
-    int sum=0;
-    fori(i,temp.size())sum=sum+temp[i].first;
+int sum(vector<pi> temp)
+{
+    int sum = 0;
+    fori(i, temp.size()) sum = sum + temp[i].first;
     return sum;
 }
-
-
 
 vector<pi> schedule(vector<pair<int, int>> &R, int no_of_slots, int l, int r, int d)
 {
@@ -87,7 +86,7 @@ vector<pi> schedule(vector<pair<int, int>> &R, int no_of_slots, int l, int r, in
     for (int i = l; i <= r; i++)
     {
         int k = min(R[i].first, d);
-        
+
         if (k > NTS)
         {
             R[i].first -= NTS;
@@ -113,7 +112,7 @@ vector<pi> schedule(vector<pair<int, int>> &R, int no_of_slots, int l, int r, in
     while (R[R.size() - 1].first == 0)
         R.pop_back();
 
-    active_nodes.pb({initial_size,temp}) ;
+    active_nodes.pb({initial_size, temp});
     return R;
 }
 
@@ -159,77 +158,85 @@ int cred_m()
             ans = ans + cred_s(R, f.first, B, S);
         }
         else
-        {    
-            fori (i,R.size())
+        {
+            fori(i, R.size())
             {
-                //y
+                // y
 
-                fori(j , active_nodes.size())
+                fori(j, active_nodes.size())
                 {
-                    //g
-                    if(R[i].first==0){
-                         break;
-                    cout<<"efwef"<<R[i].first<<endl;
-                   
+                    // g
+                    if (R[i].first == 0)
+                    {
+                        break;
+                        cout << "efwef" << R[i].first << endl;
                     }
                     if (findchunk(R[i].second, active_nodes[j].second) != -1)
                     {
-                         if(sum(active_nodes[j].second)<S*f.first){
-                        int t_slots = f.first - active_nodes[j].second[findchunk(R[i].second, active_nodes[j].second)].first;
-                        if (t_slots > 0)
+                        if (sum(active_nodes[j].second) < S * f.first)
                         {
-                            cout<<"C"<<R[i].second<<"---"<<active_nodes[j].first<<"dwdd"<<t_slots<<endl;
-                            int a =min(t_slots, R[i].first);
-                            R[i].first -= min(t_slots, R[i].first);
-                            
-                            cout<<R[i].first<<endl;
-                            active_nodes[j].second[findchunk(R[i].second, active_nodes[j].second)].first += a;
-                        }
-                    }
-                }
-                }
-                if(R[i].first!=0){
-                fori(j , active_nodes.size())
-                {
-                    if (findchunk(R[i].second, active_nodes[j].second) == -1){
-                        if(active_nodes[j].second.size()<B){
-                            if(sum(active_nodes[j].second)<S*f.first){
-                                int a= min(min(R[i].first,f.first),S*f.first-sum(active_nodes[j].second));
-                                 active_nodes[j].second.pb({a,R[i].second});
-                                 R[i].first-=a;
+                            int t_slots = f.first - active_nodes[j].second[findchunk(R[i].second, active_nodes[j].second)].first;
+                            if (t_slots > 0)
+                            {
+                                cout << "C" << R[i].second << "---" << active_nodes[j].first << "dwdd" << t_slots << endl;
+                                int a = min(t_slots, R[i].first);
+                                R[i].first -= min(t_slots, R[i].first);
+
+                                cout << R[i].first << endl;
+                                active_nodes[j].second[findchunk(R[i].second, active_nodes[j].second)].first += a;
                             }
-                           
                         }
                     }
                 }
+                if (R[i].first != 0)
+                {
+                    fori(j, active_nodes.size())
+                    {
+                        if (findchunk(R[i].second, active_nodes[j].second) == -1)
+                        {
+                            if (active_nodes[j].second.size() < B)
+                            {
+                                if (sum(active_nodes[j].second) < S * f.first)
+                                {
+                                    int a = min(min(R[i].first, f.first), S * f.first - sum(active_nodes[j].second));
+                                    active_nodes[j].second.pb({a, R[i].second});
+                                    R[i].first -= a;
+                                }
+                            }
+                        }
+                    }
                 }
             }
             sort(R.begin(), R.end());
-    reverse(R.begin(), R.end());
-    while (R[R.size() - 1].first == 0)
-        R.pop_back();
-     ans = ans + cred_s(R, f.first, B, S);
-
-
+            reverse(R.begin(), R.end());
+            while (R[R.size() - 1].first == 0)
+                R.pop_back();
+            ans = ans + cred_s(R, f.first, B, S);
         }
-         for(auto f:active_nodes){
-        cout<<f.first<<endl;
-        for(auto g:f.second){
-            cout<<g.second<<" "<<g.first<<" "<<endl;
-        }
-        
-    }
-    cout<<"after iteration"<<f.first<<endl;
+        //  for(auto f:active_nodes){
+        // cout<<f.first<<endl;
+        // for(auto g:f.second){
+        //     cout<<g.second<<" "<<g.first<<" "<<endl;
+        // }
+
+        //}
+        // cout << "after iteration" << f.first << endl;
     }
     return ans;
 }
 int main()
 {
     cin >> N >> B >> S;
-
+    if (N == 0 || B == 0 || S == 0)
+    {
+        cout << "Provide correct info!";
+        return 0;
+    }
     map<int, int> mp;
     job job1;
+    cout << "Enter no.of jobs to be scheduled: ";
     cin >> no_of_jobs;
+    cout << "For each job enter parameters in following format: deadline, number of chunks, IDs of the chunks" << endl;
     while (no_of_jobs--)
     {
         int d, c;
@@ -251,11 +258,12 @@ int main()
     }
     sort(R.begin(), R.end());
     reverse(R.begin(), R.end());
-    // nodes = cred_s(R, 3, B, S);
-    // cout << nodes<<endl;
-    // cout<<"?????????"<<endl;
-  
-    cout<<cred_m();
+
+    int no_of_active_nodes = cred_m();
+    if (no_of_active_nodes > N)
+        cout << "Number of required nodes will be greater than provided nodes, hence some deadlines will be missed!";
+    else
+        cout << no_of_active_nodes;
     //   for(auto f:active_nodes){
     //     cout<<f.first<<endl;
     //     for(auto g:f.second){
